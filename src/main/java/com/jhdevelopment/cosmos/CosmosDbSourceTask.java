@@ -1,52 +1,58 @@
 package com.jhdevelopment.cosmos;
 
-import com.microsoft.azure.documentdb.*;
 import org.apache.kafka.common.utils.AppInfoParser;
-import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 
 public class CosmosDbSourceTask extends SourceTask {
 
-    private DocumentClient client;
-    private String collectionLink;
+    private CosmosDbReader cosmosDbReader;
 
     public String version() {
         return AppInfoParser.getVersion();
     }
 
+    /**
+     * Starts the cosmos db reader and initializes the saved offsets
+     * @param map
+     */
     public void start(Map<String, String> map) {
         String endPointUri = map.get(CosmosDbSourceConfig.ENDPOINT_URI);
         String cosmosKey = map.get(CosmosDbSourceConfig.COSMOS_KEY);
-        collectionLink = map.get(CosmosDbSourceConfig.COSMOS_COLLECTION_LINKS);
-
-
-        this.client = new DocumentClient(
-                endPointUri,
-                cosmosKey,
-                new ConnectionPolicy(),
-                ConsistencyLevel.Session);
+        String collectionName = map.get(CosmosDbSourceConfig.COSMOS_COLLECTION_NAME);
+        String databaseName = map.get(CosmosDbSourceConfig.COSMOS_DATABASE);
+        int maxDocumentPerPartition = Integer.parseInt(map.get(CosmosDbSourceConfig.COSMOS_MAX_DOCUMENTS_PER_PARTITION));
+        cosmosDbReader = new CosmosDbReader(endPointUri, cosmosKey, databaseName, collectionName, maxDocumentPerPartition);
+        cosmosDbReader.start();
+        //TODO improve the way offsets are loaded this would be easy to miss.
+        loadOffsets();
     }
 
+    /**
+     *
+     * @return a list of source recods
+     * @throws InterruptedException
+     */
     public List<SourceRecord> poll() throws InterruptedException {
-        List<SourceRecord> records = new ArrayList<>();
-        ChangeFeedOptions options = new ChangeFeedOptions();
-        FeedResponse<Document> results = client.queryDocumentChangeFeed(collectionLink, options);
-        for(Document activity : results.getQueryIterable()) {
-            Date timeStamp = activity.getTimestamp();
-            Map<String, String> sourcePartition = Collections.singletonMap("cosmosCollection", collectionLink);
-            Map<String, String> sourceOffset = Collections.singletonMap(collectionLink, timeStamp.toString());
-            Schema schema = null; //TODO get schema
-            SourceRecord record = new SourceRecord(sourcePartition, sourceOffset,"test", schema, activity);
-            records.add(record);        }
-
-        return records;
+        return cosmosDbReader.poll();
     }
 
+    /**
+     * Stops the task and the cosmosDbReader
+     */
     public void stop() {
-        this.client.close();
+        cosmosDbReader.stop();
+    }
+
+
+    /**
+     * Load the saved partition offsets so that it resumes at the last location for a partition
+     */
+    private void loadOffsets() {
+        cosmosDbReader.loadOffsets(context.offsetStorageReader().offsets(cosmosDbReader.getPartitions()));
     }
 }

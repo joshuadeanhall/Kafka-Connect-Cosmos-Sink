@@ -12,6 +12,8 @@ public class CosmosDbSourceConnector extends SourceConnector {
     private String cosmosEndPointUri;
     private String cosmosKey;
     private String cosmosCollection;
+    private String cosmosDatabaseName;
+    private int maxDocumentPerPartition;
 
     @Override
     public String version() {
@@ -22,7 +24,10 @@ public class CosmosDbSourceConnector extends SourceConnector {
     public void start(Map<String, String> map) {
         cosmosEndPointUri = map.get(CosmosDbSourceConfig.ENDPOINT_URI);
         cosmosKey = map.get(CosmosDbSourceConfig.COSMOS_KEY);
-        cosmosCollection = map.get(CosmosDbSourceConfig.COSMOS_COLLECTION_LINKS);
+        cosmosCollection = map.get(CosmosDbSourceConfig.COSMOS_COLLECTION_NAMES);
+        cosmosDatabaseName = map.get(CosmosDbSourceConfig.COSMOS_DATABASE);
+        maxDocumentPerPartition = Integer.parseInt(map.get(CosmosDbSourceConfig.COSMOS_MAX_DOCUMENTS_PER_PARTITION));
+
 
         if(cosmosEndPointUri == null || cosmosEndPointUri.isEmpty()) {
             throw new ConnectException("Missing EndPoint Uri");
@@ -35,6 +40,11 @@ public class CosmosDbSourceConnector extends SourceConnector {
         if(cosmosCollection == null || cosmosCollection.isEmpty()) {
             throw new ConnectException("Missing Cosmos Collections");
         }
+
+        if(cosmosDatabaseName == null || cosmosDatabaseName.isEmpty()) {
+            throw new ConnectException("Missing Cosmos DatabaseName");
+        }
+
     }
 
     @Override
@@ -50,7 +60,9 @@ public class CosmosDbSourceConnector extends SourceConnector {
         Map<String, String> config = new HashMap<>();
         config.put(CosmosDbSourceConfig.ENDPOINT_URI, cosmosEndPointUri);
         config.put(CosmosDbSourceConfig.COSMOS_KEY, cosmosKey);
-        config.put(CosmosDbSourceConfig.COSMOS_COLLECTION_LINKS, cosmosCollection);
+        config.put(CosmosDbSourceConfig.COSMOS_COLLECTION_NAME, cosmosCollection);
+        config.put(CosmosDbSourceConfig.COSMOS_DATABASE, cosmosDatabaseName);
+        config.put(CosmosDbSourceConfig.COSMOS_MAX_DOCUMENTS_PER_PARTITION, Integer.toString(maxDocumentPerPartition));
         configs.add(config);
 
         return configs;
