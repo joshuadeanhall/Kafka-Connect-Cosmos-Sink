@@ -11,7 +11,7 @@ public class CosmosDbSourceConnector extends SourceConnector {
 
     private String cosmosEndPointUri;
     private String cosmosKey;
-    private String cosmosCollection;
+    private String cosmosCollections;
     private String cosmosDatabaseName;
     private int maxDocumentPerPartition;
 
@@ -24,7 +24,7 @@ public class CosmosDbSourceConnector extends SourceConnector {
     public void start(Map<String, String> map) {
         cosmosEndPointUri = map.get(CosmosDbSourceConfig.ENDPOINT_URI);
         cosmosKey = map.get(CosmosDbSourceConfig.COSMOS_KEY);
-        cosmosCollection = map.get(CosmosDbSourceConfig.COSMOS_COLLECTION_NAMES);
+        cosmosCollections = map.get(CosmosDbSourceConfig.COSMOS_COLLECTION_NAMES);
         cosmosDatabaseName = map.get(CosmosDbSourceConfig.COSMOS_DATABASE);
         maxDocumentPerPartition = Integer.parseInt(map.get(CosmosDbSourceConfig.COSMOS_MAX_DOCUMENTS_PER_PARTITION));
 
@@ -37,7 +37,7 @@ public class CosmosDbSourceConnector extends SourceConnector {
             throw new ConnectException("Missing Cosmos Key");
         }
 
-        if(cosmosCollection == null || cosmosCollection.isEmpty()) {
+        if(cosmosCollections == null || cosmosCollections.isEmpty()) {
             throw new ConnectException("Missing Cosmos Collections");
         }
 
@@ -54,17 +54,18 @@ public class CosmosDbSourceConnector extends SourceConnector {
 
     @Override
     public List<Map<String, String>> taskConfigs(int maxTasks) {
-        //TODO handle multiple collections
-
         ArrayList<Map<String, String>> configs = new ArrayList<>();
-        Map<String, String> config = new HashMap<>();
-        config.put(CosmosDbSourceConfig.ENDPOINT_URI, cosmosEndPointUri);
-        config.put(CosmosDbSourceConfig.COSMOS_KEY, cosmosKey);
-        config.put(CosmosDbSourceConfig.COSMOS_COLLECTION_NAME, cosmosCollection);
-        config.put(CosmosDbSourceConfig.COSMOS_DATABASE, cosmosDatabaseName);
-        config.put(CosmosDbSourceConfig.COSMOS_MAX_DOCUMENTS_PER_PARTITION, Integer.toString(maxDocumentPerPartition));
-        configs.add(config);
-
+        String[] collections = cosmosCollections.split(",");
+        int configsToCreate = Math.min(maxTasks, collections.length);
+        for(int i=0; i<configsToCreate; i++) {
+            Map<String, String> config = new HashMap<>();
+            config.put(CosmosDbSourceConfig.ENDPOINT_URI, cosmosEndPointUri);
+            config.put(CosmosDbSourceConfig.COSMOS_KEY, cosmosKey);
+            config.put(CosmosDbSourceConfig.COSMOS_COLLECTION_NAME, collections[i]);
+            config.put(CosmosDbSourceConfig.COSMOS_DATABASE, cosmosDatabaseName);
+            config.put(CosmosDbSourceConfig.COSMOS_MAX_DOCUMENTS_PER_PARTITION, Integer.toString(maxDocumentPerPartition));
+            configs.add(config);
+        }
         return configs;
     }
 
