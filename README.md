@@ -1,7 +1,7 @@
 # Kafka Connect Azure Cosmos DB Change Feed
 =================
 
-[![Build Status](https://travis-ci.org/joshuadeanhall/Kafka-Connect-Cosmos-Sink.svg?branch=master](https://travis-ci.org/joshuadeanhall/Kafka-Connect-Cosmos-Sink)
+[![Build Status](https://travis-ci.org/joshuadeanhall/Kafka-Connect-Cosmos-Sink.svg?branch=master)](https://travis-ci.org/joshuadeanhall/Kafka-Connect-Cosmos-Sink)
 
 This connector is used to load data from Azure Cosmos DB to Kafka using the [Change Feed](https://docs.microsoft.com/en-us/azure/cosmos-db/change-feed) functionality.
 
