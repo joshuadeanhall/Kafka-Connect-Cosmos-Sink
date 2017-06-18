@@ -26,7 +26,6 @@ public class CosmosDbSourceTask extends SourceTask {
         String collectionName = map.get(CosmosDbSourceConfig.COSMOS_COLLECTION_NAME);
         String databaseName = map.get(CosmosDbSourceConfig.COSMOS_DATABASE);
         int maxDocumentPerPartition = Integer.parseInt(map.get(CosmosDbSourceConfig.COSMOS_MAX_DOCUMENTS_PER_PARTITION));
-        String x = 23;
         cosmosDbReader = new CosmosDbReader(endPointUri, cosmosKey, databaseName, collectionName, maxDocumentPerPartition);
         cosmosDbReader.start();
         //TODO improve the way offsets are loaded this would be easy to miss.
