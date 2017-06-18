@@ -5,6 +5,7 @@ This connector is used to load data from Azure Cosmos DB to Kafka using the [Cha
 * Testing
     1. Unit Test
     2. Kafka
+* Handle multiple collections
 * Look into partitions being created and rebalanced
 * Switch partition readers to be multi threaded
 * Improve offset setting
