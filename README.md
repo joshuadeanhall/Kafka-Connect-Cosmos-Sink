@@ -1,5 +1,5 @@
 # Kafka Connect Azure Cosmos DB Change Feed
-=================
+
 
 [![Build Status](https://travis-ci.org/joshuadeanhall/Kafka-Connect-Cosmos-Sink.svg?branch=master)](https://travis-ci.org/joshuadeanhall/Kafka-Connect-Cosmos-Sink)
 
