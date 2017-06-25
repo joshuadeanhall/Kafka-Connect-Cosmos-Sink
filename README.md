@@ -12,5 +12,5 @@ This connector is used to load data from Azure Cosmos DB to Kafka using the [Cha
 * Look into partitions being created and rebalanced
 * Switch partition readers to be multi threaded
 * Improve offset setting
-* Provide example config
+* Add Logging
 * Improve readme with instructions for simple setup.
